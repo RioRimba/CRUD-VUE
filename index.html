@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>PROJECT</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.3/css/all.css" integrity="sha384-SZXxX4whJ79/gErwcOYf+zWLeJdY/qpuqC4cAa9rOGUstPomtqpuNWT9wdPEn2fk" crossorigin="anonymous">
+	<style type="text/css">
+		#overlay{
+			position: fixed;
+			top: 0;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			background: rgba(0,0,0,0.6);
+		}
+	</style>
+</head>
+<body>
+	<div id="app">
+		<div class="container-fluid">
+			<div class="row bg-dark">
+				<div class="col-lg-12">
+					<p class="text-center text-light display-4 pt-2" style="font-size: 30px">CRUD APLICATION</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="container">
+			<div class="row mt-3">
+				<div class="col-lg-6">
+					<h3 class="text-info">registered users</h3>
+				</div>
+				<div class="col-lg-6">
+					<button class="btn btn-info float-right" @click="addModal=true">
+						<i class="fas fa-user"></i>&nbsp;&nbsp;Add New User
+					</button>
+				</div>
+			</div>
+			<hr class="bg-info">
+			<div class="alert alert-danger" v-if="errorMsg">
+				{{errorMsg}}
+			</div>
+			<div class="alert alert-success" v-if="successMsg">
+				{{successMsg}}
+			</div>
+
+
+			<div class="row">
+				<div class="col-lg-12">
+					<table class="table table-bordered table-striped">
+						<thead>
+							<tr class="text-center bg-info text-light">
+								<th>ID</th>
+								<th>Name</th>
+								<th>Email</th>
+								<th>Phone</th>
+								<th>Edit</th>
+								<th>Delete</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr class="text-center" v-for="user in user">
+								<td>{{user.id}}</td>
+								<td>{{user.name}}</td>
+								<td>{{user.email}}</td>
+								<td>{{user.phone}}</td>
+								<td><a href="#" class="text-success" @click="editModal=true; selectUser(user); "><i class="fas fa-edit"></i></a></td>
+								<td><a href="#" class="text-danger" @click="deleteModal=true; selectUser(user);"><i class="fas fa-trash"></i></a></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+
+		<!-- add user -->
+		<div id="overlay" v-if="addModal">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title">Add New User</h5>
+						<button type="button" class="close" @click="addModal=false">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body p-4">
+						<form action="#" method="post">
+							<div class="form-group">
+								<input type="text" name="name" class="form-control form-control-lg" placeholder="Name" v-model="newUser.name">
+							</div>
+							<div class="form-group">
+								<input type="email" name="email" class="form-control form-control-lg" placeholder="E-mail" v-model="newUser.email">
+							</div>
+							<div class="form-group">
+								<input type="tel" name="phone" class="form-control form-control-lg" placeholder="Phone" v-model="newUser.phone">
+							</div>
+							<div class="form-group">
+								<button class="btn btn-info btn-block btn-lg" @click="addModal=false; addUser(); clearMsg();">Add User</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- edit user -->
+		<div id="overlay" v-if="editModal">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title">Edit User</h5>
+						<button type="button" class="close" @click="editModal=false">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body p-4">
+						<form action="#" method="post">
+							<div class="form-group">
+								<input type="text" name="name" class="form-control form-control-lg" v-model="currentUser.name">
+							</div>
+							<div class="form-group">
+								<input type="email" name="email" class="form-control form-control-lg" v-model="currentUser.email">
+							</div>
+							<div class="form-group">
+								<input type="tel" name="phone" class="form-control form-control-lg" v-model="currentUser.phone">
+							</div>
+							<div class="form-group">
+								<button class="btn btn-info btn-block btn-lg" @click="editModal=false; updateUser(); clearMsg();">Update User</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- delete user -->
+		<div id="overlay" v-if="deleteModal">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title">Delete User</h5>
+						<button type="button" class="close" @click="deleteModal=false">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body p-4">
+						<h4 class="text-danger">Anda Yakin mau menghapus '{{current.name}}'?</h4>
+						<hr>
+						<button class="btn btn-danger btn-lg" @click="deleteModal=false; deleteUser(); clearMsg();">Yes</button>
+						&nbsp;&nbsp;&nbsp;&nbsp;
+						<button class="btn btn-success btn-lg" @click="deleteModal=false">No</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+	<script>
+		var app = new Vue({
+			el:'#app',
+			data:{
+				errorMsg:"",
+				successMsg:"",
+				addModal:false,
+				editModal:false,
+				deleteModal:false,
+				user:[],
+				newUser:{name:"",email:"",phone:""},
+				currentUser:{},
+			},
+			methods:{
+				getAllUser(){
+					axios.get("http://localhost/crud-vue-php/prosess.php?action=read").then(function(response){
+						if(response.data.error){
+							app.errorMsg = response.data.message;
+						}else{
+							app.user = response.data.user;
+						}
+					});
+				},
+				addUser(){
+					var formData = app.toFormData(app.newUser);
+					axios.post("http://localhost/crud-vue-php/prosess.php?action=create", formData).then(function(response){
+						app.newUser = {name:"",email:"",phone:""};
+						if(response.data.error){
+							app.errorMsg = response.data.message;
+						}else{
+							app.successMsg = response.data.message;
+							app.getAllUser;
+						}
+					});
+				},
+				toFormData(obj){
+					var fd = new FormData();
+					for(var i in obj){
+						fd.append(i,obj[i]);
+					}
+					return fd;
+				},
+				updateUser(){
+					var formData = app.toFormData(app.currentUser);
+					axios.post("http://localhost/crud-vue-php/prosess.php?action=update", formData).then(function(response){
+						app.currentUser = {};
+						if(response.data.error){
+							app.errorMsg = response.data.message;
+						}else{
+							app.successMsg = response.data.message;
+							app.getAllUser;
+						}
+					});
+				},
+				selectUser(user){
+					app.currentUser = user;
+				},
+				deleteUser(){
+					var formData = app.toFormData(app.currentUser);
+					axios.post("http://localhost/crud-vue-php/prosess.php?action=delete", formData).then(function(response){
+						app.currentUser = {};
+						if(response.data.error){
+							app.errorMsg = response.data.message;
+						}else{
+							app.successMsg = response.data.message;
+							app.getAllUser;
+						}
+					});
+				},
+				clearMsg(){
+					app.errorMsg ="";
+					app.successMsg="";
+				},
+			},
+			mounted:function(){
+				this.getAllUser();
+			}
+		});
+	</script>
+</body>
+</html>
